@@ -33,13 +33,13 @@ const handleRESPCommand = (lines: string[]): string => {
             if (args.length < 3) {
                 return '-ERR wrong number of arguments for \'set\' command\r\n';
             }
-            store.set(args[2], args[3]);
+            store.set(args[1], args[2]);
             return '+OK\r\n'
         case 'GET':
             if (args.length < 2) {
                 return '-ERR wrong number of arguments for \'get\' command\r\n';
             }
-           const value =  store.get(args[2]);
+           const value =  store.get(args[1]);
             console.log(value)
                 if(!value){
                     return '-ERR no key found\r\n';
