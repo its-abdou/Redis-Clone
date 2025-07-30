@@ -32,6 +32,7 @@ console.log("Logs from your program will appear here!");
              message += `$${bytes}\r\n${cmd_arr[i]}\r\n`;
          }
      }
+     console.log(message);
      return message
  }
  server.listen(6379, "127.0.0.1");
