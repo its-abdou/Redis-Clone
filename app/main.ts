@@ -24,6 +24,7 @@ console.log("Logs from your program will appear here!");
  const redisParser  = (command : Buffer) : string=>{
 
      let cmd_arr : String[] = command.toString().split('\r\n');
+     cmd_arr.shift();
      cmd_arr = cmd_arr.filter((_, index) => index % 2 !== 0);
      let message:string ='';
      if(cmd_arr.length > 0 && cmd_arr[0].toUpperCase() == 'ECHO'){
