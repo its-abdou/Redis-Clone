@@ -1,5 +1,8 @@
 import * as net from "net";
-import {handleRedisCommand} from "./lib/utils/RedisParser.ts";
+import {RedisParser} from "./lib/parsers/RedisParser.ts";
+import Store from "./stores/store.ts" ;
+
+let store = new Store();
 
 // You can use print statements as follows for debugging, they'll be visible when running tests.
 console.log("Logs from your program will appear here!");
@@ -11,7 +14,7 @@ console.log("Logs from your program will appear here!");
    connection.on('data', (data : string)=>{
      console.log(`Received data from  redis client :${data}`);
         try {
-          const response = handleRedisCommand(data)
+          const response = RedisParser(data , store);
           connection.write(response);
         }catch(err){
             connection.write('-ERR invalid command\r\n');
