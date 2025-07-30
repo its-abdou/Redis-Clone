@@ -10,7 +10,7 @@ console.log("Logs from your program will appear here!");
    connection.on('data', (data)=>{
      console.log(`Received data from  redis client :${data}`);
 
-     connection.write('+PONG\\r\\n')
+     connection.write('+PONG\r\n')
    })
   connection.on('end', ()=>{
     console.log('Client disconnected');
