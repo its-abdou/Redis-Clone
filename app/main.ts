@@ -1,28 +1,35 @@
-import * as net from "net";
-import {RedisParser} from "./lib/parsers/RedisParser.ts";
-import Store from "./stores/store.ts" ;
+import * as net from 'net';
+import { parseRedisProtocol } from './protocol/parser';
+import MemoryStore from './stores/memoryStore.ts';
 
-let store = new Store();
+const store = new MemoryStore();
 
-// You can use print statements as follows for debugging, they'll be visible when running tests.
-console.log("Logs from your program will appear here!");
+console.log('Logs from your program will appear here!');
 
-// Uncomment this block to pass the first stage
- const server: net.Server = net.createServer((connection: net.Socket) => {
-   connection.setEncoding('utf8');
-   // Handle connection
-   connection.on('data', (data : string)=>{
-     console.log(`Received data from  redis client :${data}`);
+const server: net.Server = net.createServer((connection: net.Socket) => {
+    connection.setEncoding('utf8');
+
+    connection.on('data', (data: string) => {
+        console.log(`Received data from redis client: ${data}`);
+
         try {
-          const response = RedisParser(data , store);
-          connection.write(response);
-        }catch(err){
+            const response = parseRedisProtocol(data, store);
+            connection.write(response);
+        } catch (err) {
+            console.error('Error processing command:', err);
             connection.write('-ERR invalid command\r\n');
         }
-   })
-  connection.on('end', ()=>{
-    console.log('Client disconnected');
-  })
- });
+    });
 
-server.listen(6379, "127.0.0.1");
+    connection.on('end', () => {
+        console.log('Client disconnected');
+    });
+
+    connection.on('error', (err) => {
+        console.error('Connection error:', err);
+    });
+});
+
+server.listen(6379, '127.0.0.1', () => {
+    console.log('Redis server listening on 127.0.0.1:6379');
+});

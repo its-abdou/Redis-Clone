@@ -1,4 +1,6 @@
-export default class Store {
+import {type Store } from "../types";
+
+export default class MemoryStore implements Store {
     private store: Record<string, string> = {};
 
     get(key: string): string | null {
