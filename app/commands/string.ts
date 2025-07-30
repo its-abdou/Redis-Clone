@@ -1,5 +1,5 @@
 import { type Store } from '../types';
-import { createError, createSuccess, createBulkString } from '../utils/Encoder.ts';
+import {createError, createSuccess, createBulkString, createNullBulkString} from '../utils/Encoder.ts';
 
 export const stringCommands = {
     GET: (store: Store, args: string[]): string => {
@@ -9,7 +9,7 @@ export const stringCommands = {
 
         const value = store.get(args[0]);
         if (!value) {
-            return createError('no key found');
+            return createNullBulkString();
         }
 
         return createBulkString(value);

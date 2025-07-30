@@ -6,8 +6,9 @@ export default class MemoryStore implements Store {
     get(key: string): string | null {
         const item : StoredValue = this.store[key];
         if(!item) return null;
-        if(item.expiresAt && item.expiresAt <= Date.now()) {
+        if(item.expiresAt && (item.expiresAt <= Date.now())) {
             this.remove(key);
+            return null;
         }
         return item.value;
     }

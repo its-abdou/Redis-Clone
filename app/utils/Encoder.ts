@@ -9,3 +9,6 @@ export const createSuccess = (message: string = 'OK'): string => {
 export const createBulkString = (value: string): string => {
     return `$${value.length}\r\n${value}\r\n`;
 };
+export const  createNullBulkString = (): string => {
+    return "$-1\r\n";
+};
