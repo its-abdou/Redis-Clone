@@ -37,7 +37,7 @@ const handleRESPCommand = (lines: string[]): string => {
                 if(!value){
                     return '-ERR no key found\r\n';
                 }
-            return value;
+            return `$${value.length}\r\n${value}\r\n`;
         default:
             return  '-ERR command not supported!\r\n';
     }
