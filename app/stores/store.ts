@@ -6,6 +6,7 @@ export default class Store {
     }
 
     set(key: string, value: string): void {
+        console.log(`Store key: ${key} value: ${value}`);
         this.store[key] = value;
     }
 
