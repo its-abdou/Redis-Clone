@@ -2,10 +2,13 @@ import { type Store, type CommandHandler } from '../types';
 import { genericCommands } from './generic';
 import { stringCommands } from './string';
 import { createError } from '../utils/Encoder.ts';
+import {listCommands} from "./list.ts";
 
 const commandMap: Record<string, CommandHandler> = {
     ...genericCommands,
-    ...stringCommands
+    ...stringCommands,
+    ...listCommands
+
 };
 
 export const executeCommand = (command: string, store: Store, args: string[]): string => {

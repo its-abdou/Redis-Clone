@@ -10,17 +10,22 @@ export default class MemoryStore implements Store {
             this.remove(key);
             return null;
         }
-        return item.value;
+        if (item.type !== 'string') {
+            return null;
+        }
+        return item.value as string;
     }
 
     set(key: string, value: string , ttl?: number ): void {
         if (!ttl){
             this.store[key] = {
+                type : "string",
                 value : value,
                 expiresAt : undefined,
             }
         }else {
             this.store[key] = {
+                type : "string",
                 value : value,
                 expiresAt : Date.now() + ttl,
             }
@@ -29,5 +34,13 @@ export default class MemoryStore implements Store {
 
     remove(key: string): void {
         delete this.store[key];
+    }
+    rpush(key: string, value: string ): number {
+        this.store[key] = {
+            type : "list",
+            value : [value],
+        }
+
+        return this.store[key].value.length as number;
     }
 }
