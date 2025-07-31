@@ -3,6 +3,7 @@ export interface Store {
     set(key: string, value: string , ttl?: number ): void;
     remove(key: string): void;
     rpush(key:string , value : string[] ): number;
+    lpush(key:string , value : string[] ): number;
     lrange(key:string , value : string[] ): string[];
 }
 

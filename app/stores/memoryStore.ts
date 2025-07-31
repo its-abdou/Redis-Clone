@@ -50,6 +50,22 @@ export default class MemoryStore implements Store {
         }
         return this.store[key].value.length as number;
     }
+
+
+    lpush(key: string, value: string[] ): number {
+        const list :StoredValue = this.store[key];
+
+        if (list && list.type === "list") {
+            (this.store[key].value as string[]).unshift(...value);
+        }else {
+            this.store[key] = {
+                type : "list",
+                value : value,
+                expiresAt : undefined,
+            }
+        }
+        return this.store[key].value.length as number;
+    }
     lrange(key: string, value: string[]): string[] {
         const list  = this.store[key];
         const [startIndex, endIndex] = value

@@ -9,6 +9,15 @@ export  const listCommands = {
        const nb_elements = store.rpush(key, value);
        return `:${nb_elements}\r\n`;
     },
+
+    LPUSH : (store: Store, args: string[]) : string =>{
+        if (args.length < 2) {
+            return createError("wrong number of arguments for 'rpush' command");
+        }
+        const [key, ...value] = args;
+        const nb_elements = store.lpush(key, value);
+        return `:${nb_elements}\r\n`;
+    },
     LRANGE : (store: Store, args: string[]) => {
         if (args.length < 3) {
             return createError("wrong number of arguments for 'rpush' command");
