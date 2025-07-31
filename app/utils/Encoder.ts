@@ -24,7 +24,7 @@ export const  createNullArray = (): string => {
     return "*0\r\n";
 };
 export const  createInteger = (value : number): string => {
-    return `${value}\r\n`;
+    return `:${value}\r\n`;
 };
 
 
