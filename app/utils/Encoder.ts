@@ -21,5 +21,5 @@ export const createArray = (elements: string[]): string => {
     return array;
 };
 export const  createNullArray = (): string => {
-    return "$0\r\n";
+    return "*0\r\n";
 };
