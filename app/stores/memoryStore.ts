@@ -56,7 +56,8 @@ export default class MemoryStore implements Store {
         const list :StoredValue = this.store[key];
 
         if (list && list.type === "list") {
-            (this.store[key].value as string[]).unshift(...value);
+            const array = (list.value as string[]).reverse();
+            (this.store[key].value as string[]).unshift(...array);
         }else {
             this.store[key] = {
                 type : "list",
