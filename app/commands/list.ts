@@ -1,5 +1,5 @@
 import { type Store } from '../types';
-import {createBulkString, createError, createNullBulkString} from "../utils/Encoder.ts";
+import {createArray, createBulkString, createError, createNullArray, createNullBulkString} from "../utils/Encoder.ts";
 export  const listCommands = {
     RPUSH : (store: Store, args: string[]) : string =>{
         if (args.length < 2) {
@@ -16,9 +16,9 @@ export  const listCommands = {
         const [key, ...value] = args;
         const elements = store.lrange(key, value);
         if (elements.length <=0) {
-            return createNullBulkString()
+            return createNullArray();
         }
-        return createBulkString(elements);
+        return createArray(elements) ;
     }
 
 }

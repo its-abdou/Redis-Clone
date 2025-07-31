@@ -10,6 +10,6 @@ export const genericCommands = {
         if (args.length < 1) {
             return createError("wrong number of arguments for 'echo' command");
         }
-        return createBulkString([args[0]]);
+        return createBulkString(args[0]);
     }
 };
