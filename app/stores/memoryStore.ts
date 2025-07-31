@@ -54,8 +54,8 @@ export default class MemoryStore implements Store {
         const list  = this.store[key];
         const [startIndex, endIndex] = value
         if (list && list.type === "list") {
-         return (list.value as string[]).slice(Number(startIndex), Number(endIndex) +1);
-
+            const array = list.value as string[];
+         return (array).slice(Number(startIndex), (Number(endIndex)==-1?  array.length : Number(endIndex) +1));
         }else {
             return [];
         }
