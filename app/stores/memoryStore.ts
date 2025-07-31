@@ -77,4 +77,14 @@ export default class MemoryStore implements Store {
             return [];
         }
     }
+    llen(key:string):number{
+        const list  = this.store[key];
+        if (list && list.type === "list") {
+
+            return (list.value as string[]).length;
+        }else {
+            return 0
+        }
+
+    }
 }

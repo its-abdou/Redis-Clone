@@ -5,6 +5,7 @@ export interface Store {
     rpush(key:string , value : string[] ): number;
     lpush(key:string , value : string[] ): number;
     lrange(key:string , value : string[] ): string[];
+    llen(key:string ): number;
 }
 
 export  type CommandHandler = (store :Store , args : string[]) => string;
