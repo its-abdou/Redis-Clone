@@ -52,16 +52,16 @@ export default class MemoryStore implements Store {
     }
 
 
-    lpush(key: string, value: string[] ): number {
+    lpush(key: string, elements: string[] ): number {
         const list :StoredValue = this.store[key];
 
         if (list && list.type === "list") {
-            const array = (list.value as string[]).reverse();
+            const array = elements.reverse();
             (this.store[key].value as string[]).unshift(...array);
         }else {
             this.store[key] = {
                 type : "list",
-                value : value,
+                value : elements,
                 expiresAt : undefined,
             }
         }
