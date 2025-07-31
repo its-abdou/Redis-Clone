@@ -5,7 +5,7 @@ export  const listCommands = {
         if (args.length < 2) {
             return createError("wrong number of arguments for 'rpush' command");
         }
-        const [key, value] = args;
+        const [key, ...value] = args;
        const nb_elements = store.rpush(key, value);
        return `:${nb_elements}\r\n`;
     }

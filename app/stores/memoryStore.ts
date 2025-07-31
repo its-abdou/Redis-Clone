@@ -35,10 +35,17 @@ export default class MemoryStore implements Store {
     remove(key: string): void {
         delete this.store[key];
     }
-    rpush(key: string, value: string ): number {
-        this.store[key] = {
-            type : "list",
-            value : [value],
+    rpush(key: string, value: string[] ): number {
+        const list :StoredValue = this.store[key];
+
+        if (list && list.type === "list") {
+            (this.store[key].value as string[]).push(...value);
+        }else {
+            this.store[key] = {
+                type : "list",
+                value : value,
+                expiresAt : undefined,
+            }
         }
 
         return this.store[key].value.length as number;
