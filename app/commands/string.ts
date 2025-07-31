@@ -12,7 +12,7 @@ export const stringCommands = {
             return createNullBulkString();
         }
 
-        return createBulkString(value);
+        return createBulkString([value]);
     },
 
     SET: (store: Store, args: string[]): string => {

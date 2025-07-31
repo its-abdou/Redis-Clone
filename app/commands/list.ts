@@ -1,5 +1,5 @@
 import { type Store } from '../types';
-import {createError} from "../utils/Encoder.ts";
+import {createBulkString, createError, createNullBulkString} from "../utils/Encoder.ts";
 export  const listCommands = {
     RPUSH : (store: Store, args: string[]) : string =>{
         if (args.length < 2) {
@@ -8,5 +8,17 @@ export  const listCommands = {
         const [key, ...value] = args;
        const nb_elements = store.rpush(key, value);
        return `:${nb_elements}\r\n`;
+    },
+    LRANGE : (store: Store, args: string[]) => {
+        if (args.length < 3) {
+            return createError("wrong number of arguments for 'rpush' command");
+        }
+        const [key, ...value] = args;
+        const elements = store.lrange(key, value);
+        if (elements.length <=0) {
+            return createNullBulkString()
+        }
+        return createBulkString(elements);
     }
+
 }

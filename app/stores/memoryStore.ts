@@ -35,6 +35,7 @@ export default class MemoryStore implements Store {
     remove(key: string): void {
         delete this.store[key];
     }
+
     rpush(key: string, value: string[] ): number {
         const list :StoredValue = this.store[key];
 
@@ -47,7 +48,16 @@ export default class MemoryStore implements Store {
                 expiresAt : undefined,
             }
         }
-
         return this.store[key].value.length as number;
+    }
+    lrange(key: string, value: string[]): string[] {
+        const list  = this.store[key];
+        const [startIndex, endIndex] = value
+        if (list && list.type === "list") {
+         return (list.value as string[]).slice(Number(startIndex), Number(endIndex) +1);
+
+        }else {
+            return [];
+        }
     }
 }
