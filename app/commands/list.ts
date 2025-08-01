@@ -47,7 +47,7 @@ export  const listCommands = {
         if (args.length < 1) {
             return createError("wrong number of arguments for 'lpop' command");
         }
-        const value = store.lpop(args[0]);
+        const value = store.lpop(args[1]);
         if (!value) {
             return createNullBulkString();
         }else if (value.length < 2) {
