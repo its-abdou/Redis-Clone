@@ -47,16 +47,16 @@ export  const listCommands = {
         if (args.length < 1) {
             return createError("wrong number of arguments for 'lpop' command");
         }
-        const value = store.lpop(args[1]);
-        console.log(value)
-        if (!value) {
+        const [key, value] = args;
+        const removedItems = store.lpop(key , value);
+        console.log(removedItems)
+        if (!removedItems) {
 
             return createNullBulkString();
-        }else if (value.length < 2) {
-            return createBulkString(value[0])
+        }else if (removedItems.length < 2) {
+            return createBulkString(removedItems[0])
         }
-
-        return  createArray(value)
+        return  createArray(removedItems)
     }
 
 }
