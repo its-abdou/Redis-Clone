@@ -42,6 +42,19 @@ export  const listCommands = {
         }
         const value = store.llen(args[0]);
         return createInteger(value);
+    },
+    LPOP: (store: Store, args: string[]): string => {
+        if (args.length < 1) {
+            return createError("wrong number of arguments for 'lpop' command");
+        }
+        const value = store.lpop(args[0]);
+        if (!value) {
+            return createNullBulkString();
+        }else if (value.length < 2) {
+            return createBulkString(value[0])
+        }
+
+        return  createArray(value)
     }
 
 }

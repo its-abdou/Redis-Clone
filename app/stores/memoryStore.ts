@@ -85,6 +85,28 @@ export default class MemoryStore implements Store {
         }else {
             return 0
         }
-
     }
+    lpop(key: string, count?: string): string[] | null {
+        const list = this.store[key];
+        if (list && list.type === "list") {
+            const values = list.value as string[];
+            const numToPop = count ? Number(count) : 1;
+
+            if (isNaN(numToPop) || numToPop < 1) return [];
+
+            const removedItems: string[] = [];
+
+            for (let i = 0; i < numToPop && values.length > 0; i++) {
+                const item = values.shift();
+                if (item !== undefined) {
+                    removedItems.push(item);
+                }
+            }
+
+            return removedItems;
+        } else {
+            return null;
+        }
+    }
+
 }
