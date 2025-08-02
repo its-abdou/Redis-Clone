@@ -57,6 +57,17 @@ export  const listCommands = {
             return createBulkString(removedItems[0])
         }
         return  createArray(removedItems)
+    },
+    BLPOP: async (store: Store, args: string[]) : Promise<string> => {
+        if (args.length < 2) {
+            return createError("wrong number of arguments for 'blpop' command");
+        }
+        const [key, delay ] = args;
+        const removedItems = await store.blpop(key, Number(delay));
+        if (!removedItems) {
+            return createNullBulkString();
+        }
+        return createArray(removedItems)
     }
 
 }

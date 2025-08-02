@@ -12,13 +12,15 @@ const server: net.Server = net.createServer((connection: net.Socket) => {
     connection.on('data', (data: string) => {
         console.log(`Received data from redis client: ${data}`);
 
-        try {
-            const response = parseRedisProtocol(data, store);
-            connection.write(response);
-        } catch (err) {
-            console.error('Error processing command:', err);
-            connection.write('-ERR invalid command\r\n');
-        }
+        (async () => {
+            try {
+                const response = await parseRedisProtocol(data, store);
+                connection.write(response);
+            } catch (err) {
+                console.error('Error processing command:', err);
+                connection.write('-ERR invalid command\r\n');
+            }
+        })();
     });
 
     connection.on('end', () => {

@@ -2,7 +2,7 @@ import { type Store } from '../types';
 import { executeCommand } from '../commands';
 import { createError, createSuccess } from '../utils/Encoder.ts';
 
-export const parseRedisProtocol = (command: string, store: Store): string => {
+export const parseRedisProtocol =async (command: string, store: Store): Promise<string> => {
     const lines = command.split('\r\n');
 
     // Handle RESP array format
@@ -20,7 +20,7 @@ export const parseRedisProtocol = (command: string, store: Store): string => {
         }
 
         const [command, ...commandArgs] = args;
-        return executeCommand(command, store, commandArgs);
+        return await executeCommand(command, store, commandArgs);
     }
 
     // Fallback for simple commands

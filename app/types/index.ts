@@ -7,9 +7,11 @@ export interface Store {
     lrange(key:string , value : string[] ): string[];
     llen(key:string ): number;
     lpop(key:string, value? : string ): string[]| null;
+    blpop(key:string, delay : number ): Promise< string[]| null>;
+
 }
 
-export  type CommandHandler = (store :Store , args : string[]) => string;
+export  type CommandHandler = (store :Store , args : string[]) => string | Promise<string>;
 
 type RedisValue = string | string[] | Record<string, string>;
 export type StoredValue = {

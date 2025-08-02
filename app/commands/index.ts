@@ -11,7 +11,7 @@ const commandMap: Record<string, CommandHandler> = {
 
 };
 
-export const executeCommand = (command: string, store: Store, args: string[]): string => {
+export const executeCommand = async (command: string, store: Store, args: string[]): Promise<string> => {
     const cmd = command.toUpperCase();
     const handler = commandMap[cmd];
 
@@ -20,7 +20,7 @@ export const executeCommand = (command: string, store: Store, args: string[]): s
     }
 
     try {
-        return handler(store, args);
+        return await handler(store, args);
     } catch (error) {
         return createError('internal server error');
     }
