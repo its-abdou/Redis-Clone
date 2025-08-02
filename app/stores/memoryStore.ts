@@ -136,6 +136,7 @@ export default class MemoryStore implements Store {
             // Store the resolve function
             this.waiters.set(key, (value) => {
                 if (timer) clearTimeout();
+                console.log(value)
                 resolve(value);
             });
         });
