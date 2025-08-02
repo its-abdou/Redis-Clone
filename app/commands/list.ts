@@ -67,6 +67,8 @@ export  const listCommands = {
         if (!removedItems) {
             return createNullBulkString();
         }
+        console.log('BLPOP returned:', removedItems);
+
         return createArray(removedItems)
     }
 

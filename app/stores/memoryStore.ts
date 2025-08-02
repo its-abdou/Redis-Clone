@@ -7,6 +7,7 @@ export default class MemoryStore implements Store {
         const waiter = this.waiters.get(key);
         if (waiter) {
             const value = this.lpop(key);
+            console.log('Notify waiter with:', [key, ...value ?? []]);
             if (value && value.length > 0) {
                 waiter([key, ...value]);
             }
@@ -136,7 +137,6 @@ export default class MemoryStore implements Store {
             // Store the resolve function
             this.waiters.set(key, (value) => {
                 if (timer) clearTimeout();
-                console.log(value)
                 resolve(value);
             });
         });
