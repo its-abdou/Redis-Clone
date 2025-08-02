@@ -60,8 +60,9 @@ export default class MemoryStore implements Store {
                 expiresAt : undefined,
             }
         }
+        const length = this.store[key].value.length as number;
         this._notifyWaiter(key);
-        return this.store[key].value.length as number;
+        return length;
     }
 
 
@@ -78,8 +79,9 @@ export default class MemoryStore implements Store {
                 expiresAt : undefined,
             }
         }
+        const length = this.store[key].value.length as number;
         this._notifyWaiter(key);
-        return this.store[key].value.length as number;
+        return length;
     }
     lrange(key: string, value: string[]): string[] {
         const list  = this.store[key];
