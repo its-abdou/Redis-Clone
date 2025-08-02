@@ -124,7 +124,9 @@ export default class MemoryStore implements Store {
     }
     async blpop(key: string, delay: number): Promise<string[] | null> {
         const result = this.lpop(key);
-        if (result && result.length > 0) return result;
+        if (result && result.length > 0) {
+            return [key, ...result];
+        }
 
         return new Promise((resolve) => {
             let timer :Timer | null = null;
@@ -136,7 +138,7 @@ export default class MemoryStore implements Store {
             }
             // Store the resolve function
             this.waiters.set(key, (value) => {
-                if (timer) clearTimeout();
+                if (timer) clearTimeout(timer);
                 resolve(value);
             });
         });
