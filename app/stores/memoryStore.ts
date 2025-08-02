@@ -132,8 +132,8 @@ export default class MemoryStore implements Store {
             let timer :Timer | null = null;
             if (delay>0) {
                 timer = setTimeout(() => {
-                    this.waiters.delete(key);  // Clean up
-                    resolve(null);  // Timed out
+                    this.waiters.delete(key);
+                    resolve(null);
                 }, delay);
             }
             // Store the resolve function

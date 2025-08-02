@@ -63,7 +63,7 @@ export  const listCommands = {
             return createError("wrong number of arguments for 'blpop' command");
         }
         const [key, delay ] = args;
-        const removedItems = await store.blpop(key, Number(delay));
+        const removedItems = await store.blpop(key, Number(delay)*1000);
         if (!removedItems) {
             return createNullBulkString();
         }
