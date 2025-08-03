@@ -5,6 +5,9 @@ export const createError = (message: string): string => {
 export const createSuccess = (message: string = 'OK'): string => {
     return `+${message}\r\n`;
 };
+export const createString = (value:string): string =>{
+    return `+${value}\r\n`;
+}
 
 export const createBulkString = (value: string): string => {
     return `$${value.length}\r\n${value}\r\n`;

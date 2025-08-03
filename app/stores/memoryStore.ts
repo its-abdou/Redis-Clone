@@ -144,7 +144,11 @@ export default class MemoryStore implements Store {
                 resolve(value);
             });
         });
-
+    }
+    type(key: string): string | null {
+        const item = this.store[key];
+        if (!item) return null;
+        return item.type;
     }
 
 }

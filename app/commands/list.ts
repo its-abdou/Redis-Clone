@@ -49,7 +49,7 @@ export  const listCommands = {
         }
         const [key, value] = args;
         const removedItems = store.lpop(key , value);
-        console.log(removedItems)
+
         if (!removedItems) {
 
             return createNullBulkString();

@@ -8,6 +8,7 @@ export interface Store {
     llen(key:string ): number;
     lpop(key:string, value? : string ): string[]| null;
     blpop(key:string, delay : number ): Promise< string[]| null>;
+    type(key:string): string | null;
 
 }
 
