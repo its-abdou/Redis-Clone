@@ -10,7 +10,6 @@ const server: net.Server = net.createServer((connection: net.Socket) => {
     connection.setEncoding('utf8');
 
     connection.on('data', (data: string) => {
-        console.log(`Received data from redis client: ${data}`);
 
         (async () => {
             try {
