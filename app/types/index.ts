@@ -8,15 +8,28 @@ export interface Store {
     llen(key:string ): number;
     lpop(key:string, value? : string ): string[]| null;
     blpop(key:string, delay : number ): Promise< string[]| null>;
+    xadd(key:string , entry : string[] ): string;
     type(key:string): string | null;
 
 }
 
 export  type CommandHandler = (store :Store , args : string[]) => string | Promise<string>;
+export type StreamMessage = {
+    id: string;
+    fields: Map<string, string>; // field-value pairs
+};
 
-type RedisValue = string | string[] | Record<string, string>;
+// Union type for different Redis value types
+export type RedisValue =
+    | string                    // String values
+    | string[]                  // List values
+    | StreamMessage[];          // Stream values (array of messages)
+
+// StoredValue with discriminated union for type safety
 export type StoredValue = {
-    type : 'string'|'list';
-    value : RedisValue;
     expiresAt?: number;
-}
+} & (
+    | { type: 'string'; value: string }
+    | { type: 'list'; value: string[] }
+    | { type: 'stream'; value: StreamMessage[] }
+    );

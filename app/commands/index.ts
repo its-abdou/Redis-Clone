@@ -3,12 +3,13 @@ import { genericCommands } from './generic';
 import { stringCommands } from './string';
 import { createError } from '../utils/Encoder.ts';
 import {listCommands} from "./list.ts";
+import {streamCommands} from "./stream.ts";
 
 const commandMap: Record<string, CommandHandler> = {
     ...genericCommands,
     ...stringCommands,
-    ...listCommands
-
+    ...listCommands,
+    ...streamCommands
 };
 
 export const executeCommand = async (command: string, store: Store, args: string[]): Promise<string> => {

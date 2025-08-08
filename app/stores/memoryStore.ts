@@ -48,19 +48,21 @@ export default class MemoryStore implements Store {
         delete this.store[key];
     }
 
-    rpush(key: string, value: string[] ): number {
+    rpush(key: string, values: string[] ): number {
         const list :StoredValue = this.store[key];
 
         if (list && list.type === "list") {
-            (this.store[key].value as string[]).push(...value);
+            (this.store[key].value as string[]).push(...values);
         }else {
             this.store[key] = {
                 type : "list",
-                value : value,
+                value : values,
                 expiresAt : undefined,
             }
         }
-        const length = this.store[key].value.length as number;
+        const updatedItem = this.store[key] as StoredValue & { type: 'list' };
+        const length = updatedItem.value.length;
+
         this._notifyWaiter(key);
         return length;
     }
@@ -79,7 +81,9 @@ export default class MemoryStore implements Store {
                 expiresAt : undefined,
             }
         }
-        const length = this.store[key].value.length as number;
+        const updatedItem = this.store[key] as StoredValue & { type: 'list' };
+        const length = updatedItem.value.length;
+
         this._notifyWaiter(key);
         return length;
     }
@@ -145,6 +149,27 @@ export default class MemoryStore implements Store {
             });
         });
     }
+    xadd(key: string, entry: string[]): string {
+        const stream  = this.store[key];
+        let entryId : string = entry[0];
+        let keys : string[] = entry.filter((element, index:number) => index > 0 && index % 2 === 0);
+        let values : string[] = entry.filter((element, index) => index > 0 && index % 2 === 1);
+
+        const fields = new Map<string, string>();
+        keys.forEach((key, index) => {
+            fields.set(key, values[index]);
+        })
+        if(stream && stream.type === "stream") {
+            stream.value.push({id : entryId , fields})
+        }else {
+            this.store[key] = {
+                type : 'stream',
+                value : [{id : entryId , fields}],
+            }
+        }
+        return entryId;
+    }
+
     type(key: string): string | null {
         const item = this.store[key];
         if (!item) return null;
