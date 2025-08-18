@@ -1,7 +1,7 @@
-import { type Store, type CommandHandler } from '../types';
+import { type Store, type CommandHandler } from '../store/interface.ts';
 import { genericCommands } from './generic';
 import { stringCommands } from './string';
-import { createError } from '../utils/Encoder.ts';
+import { createError } from '../protocol/Encoder.ts';
 import {listCommands} from "./list.ts";
 import {streamCommands} from "./stream.ts";
 

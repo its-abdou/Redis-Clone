@@ -1,5 +1,5 @@
-import { type Store } from '../types';
-import {createError, createSuccess, createBulkString, createString} from '../utils/Encoder.ts';
+import { type Store } from '../store/interface.ts';
+import {createError, createSuccess, createBulkString, createString} from '../protocol/Encoder.ts';
 
 export const genericCommands = {
     PING: (store: Store, args: string[]): string => {

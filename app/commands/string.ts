@@ -1,5 +1,5 @@
-import { type Store } from '../types';
-import {createError, createSuccess, createBulkString, createNullBulkString} from '../utils/Encoder.ts';
+import { type Store } from '../store/interface.ts';
+import {createError, createSuccess, createBulkString, createNullBulkString} from '../protocol/Encoder.ts';
 
 export const stringCommands = {
     GET: (store: Store, args: string[]): string => {

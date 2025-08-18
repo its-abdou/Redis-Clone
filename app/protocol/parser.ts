@@ -1,6 +1,6 @@
 import { type Store } from '../types';
 import { executeCommand } from '../commands';
-import { createError, createSuccess } from '../utils/Encoder.ts';
+import { createError, createSuccess } from './Encoder.ts';
 
 export const parseRedisProtocol =async (command: string, store: Store): Promise<string> => {
     const lines = command.split('\r\n');

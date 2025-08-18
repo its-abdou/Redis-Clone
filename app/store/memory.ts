@@ -1,6 +1,6 @@
-import {type Store, type StoredValue} from "../types";
+import {type Store, type StoredValue} from "./interface.ts";
 
-export default class MemoryStore implements Store {
+export default class Memory implements Store {
     private store: Record<string, StoredValue> = {};
     private waiters: Map<string, (value: string[] | null) => void> = new Map();
     private _notifyWaiter(key: string) {
@@ -13,6 +13,41 @@ export default class MemoryStore implements Store {
             }
             this.waiters.delete(key);
         }
+    }
+    private _getLastStreamId(key: string): string | null {
+        const item = this.store[key];
+        if (!item || item.type !=='stream' || item.value.length === 0) {
+            return null;
+        }
+        return item.value[item.value.length - 1].id;
+    }
+
+    private _validateStreamId(key : string, providedId: string) {
+
+            const parts = providedId.split('-');
+            if (parts.length !== 2) {
+                throw new Error('Stream ID must be in timestamp-sequence format');
+            }
+            const [timestampStr, sequenceStr] = parts;
+            const timestamp = Number(timestampStr);
+            const sequence = Number(sequenceStr);
+            if (isNaN(timestamp) || isNaN(sequence)) {
+                throw new Error('Timestamp and sequence number must be numeric');
+            }
+            if (timestamp == 0 && sequence == 0) {
+                throw new Error('The ID specified in XADD must be greater than 0-0');
+            }
+            const lastStreamId = this._getLastStreamId(key);
+            if (lastStreamId) {
+                const [lastStreamTimestampStr, lastStreamSequenceStr] = lastStreamId.split('-');
+                const lastStreamTimestamp = Number(lastStreamTimestampStr);
+                const lastStreamSequence = Number(lastStreamSequenceStr);
+
+                if ((timestamp==lastStreamTimestamp && sequence==lastStreamSequence) || (timestamp<lastStreamTimestamp)) {
+                    throw new Error('The ID specified in XADD is equal or smaller than the target stream top item');
+                }
+            }
+            return providedId;
     }
 
     get(key: string): string | null {
@@ -152,22 +187,31 @@ export default class MemoryStore implements Store {
     xadd(key: string, entry: string[]): string {
         const stream  = this.store[key];
         let entryId : string = entry[0];
-        let keys : string[] = entry.filter((element, index:number) => index > 0 && index % 2 === 0);
-        let values : string[] = entry.filter((element, index) => index > 0 && index % 2 === 1);
+        try {
+            let keys : string[] = entry.filter((element, index:number) => index > 0 && index % 2 === 0);
+            let values : string[] = entry.filter((element, index) => index > 0 && index % 2 === 1);
 
-        const fields = new Map<string, string>();
-        keys.forEach((key, index) => {
-            fields.set(key, values[index]);
-        })
-        if(stream && stream.type === "stream") {
-            stream.value.push({id : entryId , fields})
-        }else {
-            this.store[key] = {
-                type : 'stream',
-                value : [{id : entryId , fields}],
+            const fields = new Map<string, string>();
+            keys.forEach((key, index) => {
+                fields.set(key, values[index]);
+            })
+
+            const id = this._validateStreamId(key,entryId)
+            if(stream && stream.type === "stream") {
+                stream.value.push({id , fields})
+            }else {
+                this.store[key] = {
+                    type : 'stream',
+                    value : [{id , fields}],
+                }
             }
+            return entryId;
+        }catch (err) {
+            if (err instanceof Error) {
+                throw new Error(err.message);
+            }
+            throw new Error(String(err));
         }
-        return entryId;
     }
 
     type(key: string): string | null {

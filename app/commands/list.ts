@@ -1,4 +1,4 @@
-import { type Store } from '../types';
+import { type Store } from '../store/interface.ts';
 import {
     createArray,
     createBulkString,
@@ -6,7 +6,7 @@ import {
     createInteger,
     createNullArray,
     createNullBulkString
-} from "../utils/Encoder.ts";
+} from "../protocol/Encoder.ts";
 export  const listCommands = {
     RPUSH : (store: Store, args: string[]) : string =>{
         if (args.length < 2) {

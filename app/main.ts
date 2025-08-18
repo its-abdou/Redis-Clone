@@ -1,8 +1,8 @@
 import * as net from 'net';
 import { parseRedisProtocol } from './protocol/parser';
-import MemoryStore from './stores/memoryStore.ts';
+import Memory from './store/memory.ts';
 
-const store = new MemoryStore();
+const store = new Memory();
 
 console.log('Logs from your program will appear here!');
 
