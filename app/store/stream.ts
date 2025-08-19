@@ -8,21 +8,28 @@ export class StreamStore {
         if (!item || item.type !== 'stream' || item.value.length === 0) return null;
         return item.value[item.value.length - 1].id;
     }
-    private generateId(key:string, idType : string, id:string): string {
-        if (idType === 'auto-sequence') {
-            const [timestampStr, sequenceStr] = id.split('-');
-            let sequence:Number = 0;
-            const timestamp = Number(timestampStr);
-            const lastId = this.getLastStreamId(key);
-            if (lastId) {
-                const [lastTimestamp, lastSequence] = lastId.split('-').map(Number);
-                if(timestamp==lastTimestamp) sequence = lastSequence + 1;
-            }
-            if(timestamp==0) sequence = 1;
-            return `${timestamp}-${sequence}`;
+    private generateId(key: string, idType:string, id: string): string {
+        const lastId = this.getLastStreamId(key);
+        let sequence = 0;
+        let timestamp: number;
+
+        if (idType === "auto-sequence") {
+            const [timestampStr] = id.split("-");
+            timestamp = Number(timestampStr) || 0;
+        } else {
+            timestamp = Date.now();
         }
 
-        return ''
+        if (lastId) {
+            const [lastTimestamp, lastSequence] = lastId.split("-").map(Number);
+            if (timestamp === lastTimestamp) {
+                sequence = lastSequence + 1;
+            }
+        }
+        if (timestamp === 0 && sequence === 0) {
+            sequence = 1;
+        }
+        return `${timestamp}-${sequence}`;
     }
     private classifyId(id: string)  {
         if(id==='*') return 'auto-full';
