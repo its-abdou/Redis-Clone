@@ -1,39 +1,22 @@
 import { type Store } from '../store/interface.ts';
-import {createError, createSuccess, createBulkString, createNullBulkString} from '../protocol/Encoder.ts';
+import { encodeError, encodeBulkString, encodeNullBulkString, encodeSimpleString } from '../protocol/encoder';
+import { createArgCountError } from '../utils/errors';
 
-export const stringCommands = {
-    GET: (store: Store, args: string[]): string => {
-        if (args.length < 1) {
-            return createError("wrong number of arguments for 'get' command");
-        }
-
+export const stringCommandHandlers = {
+    GET: async (store: Store, args: string[]): Promise<string> => {
+        if (args.length < 1) return encodeError(createArgCountError('get'));
         const value = store.get(args[0]);
-        if (!value) {
-            return createNullBulkString();
-        }
-
-        return createBulkString(value);
+        return value ? encodeBulkString(value) : encodeNullBulkString();
     },
-
-    SET: (store: Store, args: string[]): string => {
-        if (args.length < 2) {
-            return createError("wrong number of arguments for 'set' command");
-        }
-      const [key, value ,...options] = args;
-        if (options.length < 1) {
+    SET: async (store: Store, args: string[]): Promise<string> => {
+        if (args.length < 2) return encodeError(createArgCountError('set'));
+        const [key, value, option, ttl] = args;
+        if (option && option.toUpperCase() === 'PX') {
+            if (!ttl) return encodeError(createArgCountError('set'));
+            store.set(key, value, Number(ttl));
+        } else {
             store.set(key, value);
-        }else {
-           const option = options[0].toUpperCase();
-           const ttl  = options[1];
-
-           switch (option) {
-               case 'PX':
-                   if(!ttl){
-                       return createError("wrong number of arguments for 'set' command");
-                   }
-                   store.set(key, value,  Number(ttl));
-           }
         }
-        return createSuccess();
-    }
+        return encodeSimpleString();
+    },
 };

@@ -1,16 +1,15 @@
 export interface Store {
     get(key: string): string | null;
-    set(key: string, value: string , ttl?: number ): void;
+    set(key: string, value: string, ttl?: number): void;
     remove(key: string): void;
-    rpush(key:string , value : string[] ): number;
-    lpush(key:string , value : string[] ): number;
-    lrange(key:string , value : string[] ): string[];
-    llen(key:string ): number;
-    lpop(key:string, value? : string ): string[]| null;
-    blpop(key:string, delay : number ): Promise< string[]| null>;
-    xadd(key:string , entry : string[] ): string;
-    type(key:string): string | null;
-
+    rpush(key: string, values: string[]): number;
+    lpush(key: string, elements: string[]): number;
+    lrange(key: string, start: number, end: number): string[];
+    llen(key: string): number;
+    lpop(key: string, count?: number): string[] | null;
+    blpop(key: string, timeoutMs: number): Promise<string[] | null>;
+    xadd(key: string, id: string, fields: [string, string][]): string;
+    type(key: string): string | null;
 }
 
 export  type CommandHandler = (store :Store , args : string[]) => string | Promise<string>;

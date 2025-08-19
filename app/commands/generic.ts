@@ -1,26 +1,16 @@
 import { type Store } from '../store/interface.ts';
-import {createError, createSuccess, createBulkString, createString} from '../protocol/Encoder.ts';
+import { encodeSimpleString, encodeError } from '../protocol/encoder';
+import { createArgCountError } from '../utils/errors';
 
-export const genericCommands = {
-    PING: (store: Store, args: string[]): string => {
-        return createSuccess('PONG');
+export const genericCommandHandlers = {
+    PING: async (store: Store, args: string[]): Promise<string> => encodeSimpleString('PONG'),
+    ECHO: async (store: Store, args: string[]): Promise<string> => {
+        if (args.length < 1) return encodeError(createArgCountError('echo'));
+        return encodeSimpleString(args[0]);
     },
-
-    ECHO: (store: Store, args: string[]): string => {
-        if (args.length < 1) {
-            return createError("wrong number of arguments for 'echo' command");
-        }
-        return createBulkString(args[0]);
+    TYPE: async (store: Store, args: string[]): Promise<string> => {
+        if (args.length < 1) return encodeError(createArgCountError('type'));
+        const type = store.type(args[0]);
+        return encodeSimpleString(type ?? 'none');
     },
-    TYPE:(store:Store , args:string[]): string =>{
-        if (args.length < 1) {
-            return createError("wrong number of arguments for 'type' command");
-        }
-        const key = args[0];
-        const type = store.type(key);
-        if (!type) {
-            return createString('none')
-        }
-        return createString(type);
-    }
 };

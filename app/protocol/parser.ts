@@ -1,28 +1,22 @@
-import { type Store } from '../types';
-import { executeCommand } from '../commands';
-import { createError, createSuccess } from './Encoder.ts';
+import { type Store } from '../store/interface.ts';
+import { CommandExecutor } from '../commands';
+import { encodeSimpleString, encodeError } from './encoder';
 
-export const parseRedisProtocol =async (command: string, store: Store): Promise<string> => {
+const executor = new CommandExecutor();
+
+export async function parseRedisProtocol(command: string, store: Store): Promise<string> {
     const lines = command.split('\r\n');
 
-    // Handle RESP array format
-    if (lines[0].startsWith('*')) {
-        const args: string[] = [];
+    if (lines[0].startsWith('+')) return lines[0] + '\r\n';
+    if (!lines[0].startsWith('*')) return encodeSimpleString('PONG');
 
-        for (let i = 1; i < lines.length; i += 2) {
-            if (lines[i]?.startsWith('$') && lines[i + 1]) {
-                args.push(lines[i + 1]);
-            }
-        }
-
-        if (args.length === 0) {
-            return createError('empty command');
-        }
-
-        const [command, ...commandArgs] = args;
-        return await executeCommand(command, store, commandArgs);
+    const args: string[] = [];
+    for (let i = 1; i < lines.length; i += 2) {
+        if (lines[i]?.startsWith('$') && lines[i + 1]) args.push(lines[i + 1]);
     }
 
-    // Fallback for simple commands
-    return createSuccess('PONG');
-};
+    if (args.length === 0) return encodeError('empty command');
+
+    const [cmd, ...cmdArgs] = args;
+    return executor.execute(cmd, store, cmdArgs);
+}

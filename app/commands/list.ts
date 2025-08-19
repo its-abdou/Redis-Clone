@@ -1,75 +1,42 @@
-import { type Store } from '../store/interface.ts';
-import {
-    createArray,
-    createBulkString,
-    createError,
-    createInteger,
-    createNullArray,
-    createNullBulkString
-} from "../protocol/Encoder.ts";
-export  const listCommands = {
-    RPUSH : (store: Store, args: string[]) : string =>{
-        if (args.length < 2) {
-            return createError("wrong number of arguments for 'rpush' command");
-        }
-        const [key, ...value] = args;
-       const nb_elements = store.rpush(key, value);
-       return `:${nb_elements}\r\n`;
-    },
+import { type Store } from '../store/interface';
+import { encodeArray, encodeBulkString, encodeError, encodeInteger, encodeNullArray, encodeNullBulkString } from '../protocol/encoder';
+import { createArgCountError } from '../utils/errors';
 
-    LPUSH : (store: Store, args: string[]) : string =>{
-        if (args.length < 2) {
-            return createError("wrong number of arguments for 'lpush' command");
-        }
-        const [key, ...value] = args;
-        const nb_elements = store.lpush(key, value);
-        return `:${nb_elements}\r\n`;
+export const listCommandHandlers = {
+    RPUSH: async (store: Store, args: string[]): Promise<string> => {
+        if (args.length < 2) return encodeError(createArgCountError('rpush'));
+        const [key, ...values] = args;
+        const elementCount = store.rpush(key, values);
+        return encodeInteger(elementCount);
     },
-    LRANGE : (store: Store, args: string[]): string => {
-        if (args.length < 3) {
-            return createError("wrong number of arguments for 'lrange' command");
-        }
-        const [key, ...value] = args;
-        const elements = store.lrange(key, value);
-        if (elements.length <=0) {
-            return createNullArray();
-        }
-        return createArray(elements) ;
+    LPUSH: async (store: Store, args: string[]): Promise<string> => {
+        if (args.length < 2) return encodeError(createArgCountError('lpush'));
+        const [key, ...elements] = args;
+        const elementCount = store.lpush(key, elements);
+        return encodeInteger(elementCount);
     },
-    LLEN: (store: Store, args: string[]): string => {
-        if (args.length < 1) {
-            return createError("wrong number of arguments for 'llen' command");
-        }
-        const value = store.llen(args[0]);
-        return createInteger(value);
+    LRANGE: async (store: Store, args: string[]): Promise<string> => {
+        if (args.length < 3) return encodeError(createArgCountError('lrange'));
+        const [key, start, end] = args;
+        const elements = store.lrange(key, Number(start), Number(end));
+        return elements.length ? encodeArray(elements) : encodeNullArray();
     },
-    LPOP: (store: Store, args: string[]): string => {
-        if (args.length < 1) {
-            return createError("wrong number of arguments for 'lpop' command");
-        }
-        const [key, value] = args;
-        const removedItems = store.lpop(key , value);
-
-        if (!removedItems) {
-
-            return createNullBulkString();
-        }else if (removedItems.length < 2) {
-            return createBulkString(removedItems[0])
-        }
-        return  createArray(removedItems)
+    LLEN: async (store: Store, args: string[]): Promise<string> => {
+        if (args.length < 1) return encodeError(createArgCountError('llen'));
+        const length = store.llen(args[0]);
+        return encodeInteger(length);
     },
-    BLPOP: async (store: Store, args: string[]) : Promise<string> => {
-        if (args.length < 2) {
-            return createError("wrong number of arguments for 'blpop' command");
-        }
-        const [key, delay ] = args;
-        const removedItems = await store.blpop(key, Number(delay)*1000);
-        if (!removedItems) {
-            return createNullBulkString();
-        }
-        console.log('BLPOP returned:', removedItems);
-
-        return createArray(removedItems)
-    }
-
-}
+    LPOP: async (store: Store, args: string[]): Promise<string> => {
+        if (args.length < 1) return encodeError(createArgCountError('lpop'));
+        const [key, countStr] = args;
+        const removedItems = store.lpop(key, countStr ? Number(countStr) : undefined);
+        if (!removedItems) return encodeNullBulkString();
+        return removedItems.length === 1 ? encodeBulkString(removedItems[0]) : encodeArray(removedItems);
+    },
+    BLPOP: async (store: Store, args: string[]): Promise<string> => {
+        if (args.length < 2) return encodeError(createArgCountError('blpop'));
+        const [key, timeout] = args;
+        const result = await store.blpop(key, Number(timeout) * 1000);
+        return result ? encodeArray(result) : encodeNullBulkString();
+    },
+};

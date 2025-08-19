@@ -1,28 +1,22 @@
 import { type Store, type CommandHandler } from '../store/interface.ts';
-import { genericCommands } from './generic';
-import { stringCommands } from './string';
-import { createError } from '../protocol/Encoder.ts';
-import {listCommands} from "./list.ts";
-import {streamCommands} from "./stream.ts";
+import { encodeError } from '../protocol/encoder';
+import { genericCommandHandlers } from './generic';
+import { stringCommandHandlers } from './string';
+import { listCommandHandlers } from './list';
+import { streamCommandHandlers } from './stream';
 
-const commandMap: Record<string, CommandHandler> = {
-    ...genericCommands,
-    ...stringCommands,
-    ...listCommands,
-    ...streamCommands
-};
+export class CommandExecutor {
+    private commandMap: Record<string, CommandHandler> = {
+        ...genericCommandHandlers,
+        ...stringCommandHandlers,
+        ...listCommandHandlers,
+        ...streamCommandHandlers,
+    };
 
-export const executeCommand = async (command: string, store: Store, args: string[]): Promise<string> => {
-    const cmd = command.toUpperCase();
-    const handler = commandMap[cmd];
-
-    if (!handler) {
-        return createError('command not supported!');
+    async execute(command: string, store: Store, args: string[]): Promise<string> {
+        const cmd = command.toUpperCase();
+        const handler = this.commandMap[cmd];
+        if (!handler) return encodeError(`command '${cmd}' not supported`);
+        return handler(store, args);
     }
-
-    try {
-        return await handler(store, args);
-    } catch (error) {
-        return createError('internal server error');
-    }
-};
+}

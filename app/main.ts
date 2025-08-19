@@ -1,25 +1,22 @@
 import * as net from 'net';
 import { parseRedisProtocol } from './protocol/parser';
-import Memory from './store/memory.ts';
+import { MemoryStore } from './store/memory';
 
-const store = new Memory();
+const store = new MemoryStore();
 
 console.log('Logs from your program will appear here!');
 
 const server: net.Server = net.createServer((connection: net.Socket) => {
     connection.setEncoding('utf8');
 
-    connection.on('data', (data: string) => {
-
-        (async () => {
-            try {
-                const response = await parseRedisProtocol(data, store);
-                connection.write(response);
-            } catch (err) {
-                console.error('Error processing command:', err);
-                connection.write('-ERR invalid command\r\n');
-            }
-        })();
+    connection.on('data', async (data: string) => {
+        try {
+            const response = await parseRedisProtocol(data, store);
+            connection.write(response);
+        } catch (err) {
+            console.error('Error processing command:', err);
+            connection.write('-ERR invalid command\r\n');
+        }
     });
 
     connection.on('end', () => {

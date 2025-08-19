@@ -1,24 +1,21 @@
 import {type Store} from "../store/interface.ts";
-import {createBulkString, createError} from "../protocol/Encoder.ts";
+import { encodeBulkString, encodeError } from '../protocol/encoder';
+import { createArgCountError } from '../utils/errors';
 
-export const streamCommands ={
-    XADD : (store : Store, args : string[]) : string=> {
-
-        if (args.length < 3) {
-            return createError("wrong number of arguments for 'xadd' command");
+export const streamCommandHandlers = {
+    XADD: async (store: Store, args: string[]): Promise<string> => {
+        if (args.length < 3) return encodeError(createArgCountError('xadd'));
+        const [key, id, ...fieldValuePairs] = args;
+        if (fieldValuePairs.length % 2 !== 0) return encodeError('invalid field-value pairs');
+        const fields: [string, string][] = [];
+        for (let i = 0; i < fieldValuePairs.length; i += 2) {
+            fields.push([fieldValuePairs[i], fieldValuePairs[i + 1]]);
         }
-
-        const [key, ...entry] = args;
         try {
-            const entryId = store.xadd(key, entry);
-            return createBulkString(entryId);
-        }catch(err){
-            if (err instanceof Error) {
-                return createError(err.message);
-            }
-            return createError(String(err));
+            const streamId = store.xadd(key, id, fields);
+            return encodeBulkString(streamId);
+        } catch (err) {
+            return encodeError(err instanceof Error ? err.message : String(err));
         }
-
     },
-
-}
+};
