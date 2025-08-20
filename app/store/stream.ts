@@ -8,6 +8,11 @@ export class StreamStore {
         if (!item || item.type !== 'stream' || item.value.length === 0) return null;
         return item.value[item.value.length - 1].id;
     }
+    getFirstStreamId(key: string): string | null {
+        const item = this.data[key];
+        if (!item || item.type !== 'stream' || item.value.length === 0) return null;
+        return item.value[0].id;
+    }
 
     private compareStreamId(id1: string, id2: string): number {
         const [ts1, seq1] = id1.split('-').map(Number);
@@ -91,14 +96,22 @@ export class StreamStore {
 
     xrange(key: string, start: string, end: string): [string, string[]][] {
         const item = this.data[key];
+        let startId:string , endId:string;
 
         if (!item || item.type !== 'stream' || item.value.length === 0) {
             return [];
         }
+         if (start==='-'){
+             startId = this?.getFirstStreamId(key) || '';
+         }else {
+             startId = start.includes('-') ? start : `${start}-0`;
+         }
+         if (end==='+'){
+             endId = this?.getLastStreamId(key) || '';
+         }else {
+             endId = end.includes('-') ? end : `${end}-${Number.MAX_SAFE_INTEGER}`;
+         }
 
-
-        const startId = start.includes('-') ? start : `${start}-0`;
-        const endId = end.includes('-') ? end : `${end}-${Number.MAX_SAFE_INTEGER}`;
 
         return item.value
             .filter(entry =>
