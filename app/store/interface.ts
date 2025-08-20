@@ -10,6 +10,7 @@ export interface Store {
     blpop(key: string, timeoutMs: number): Promise<string[] | null>;
     xadd(key: string, id: string, fields: [string, string][]): string;
     xrange(key: string, start: string, end: string): [string, string[]][];
+    xread(keys: string[], startIds: string[]): [string, [string, string[]][]][];
     type(key: string): string | null;
 }
 

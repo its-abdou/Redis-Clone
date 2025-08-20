@@ -123,7 +123,29 @@ export class StreamStore {
                 Array.from(entry.fields).flatMap(([key, value]) => [key, value])
             ]);
     }
+    xread(keys: string[], startIds: string[]): [string, [string, string[]][]][] {
+        let elements:[string, [string, string[]][]][] = []
+        for (let i=0 ; i<keys.length; i++){
+            const streamName = keys[i];
+            const item = this.data[streamName];
+            if (!item || item.type !== 'stream' || item.value.length === 0) {
+                continue;
+            }
+            const startId = startIds[i].includes('-') ? startIds[i] : `${startIds[i]}-0`;
 
+            const arrayOfEntries=item.value
+                .filter(entry =>
+                    this.compareStreamId(entry.id, startId) > 0
+                ).map(entry => [
+                    entry.id,
+                    Array.from(entry.fields).flatMap(([key, value]) => [key, value])
+                ] as [string, string[]]);
+            if (arrayOfEntries.length > 0) {
+                elements.push([streamName, arrayOfEntries]);
+            }
+        }
+        return elements;
+    }
     remove(key: string): void {
         delete this.data[key];
     }

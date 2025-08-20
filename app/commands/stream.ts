@@ -1,5 +1,5 @@
 import {type Store} from "../store/interface.ts";
-import {encodeBulkString, encodeError, encodeStream} from '../protocol/encoder';
+import {encodeArray, encodeBulkString, encodeError, encodeStream} from '../protocol/encoder';
 import { createArgCountError } from '../utils/errors';
 
 export const streamCommandHandlers = {
@@ -27,6 +27,26 @@ export const streamCommandHandlers = {
         }catch (err) {
             return encodeError(err instanceof Error ? err.message : String(err));
         }
-
+    },
+    XREAD: async (store: Store, args: string[]): Promise<string> => {
+        if (args.length < 3) return encodeError(createArgCountError('xrange'));
+        let keys: string[] = [];
+        let startIds : string[] = [];
+        for (let i=1 ; i<args.length; i++){
+            if(i%2==1) keys.push(args[i]);
+            else startIds.push(args[i]);
+        }
+        try {
+            const elements = store.xread(keys, startIds)
+            let response = `*${elements.length}\r\n`
+            for (const [streamName , entriesArray] of elements) {
+                response+= `*2\r\n`;
+                response += encodeBulkString(streamName);
+                response += encodeStream(entriesArray);
+            }
+            return response;
+        }catch (err) {
+            return encodeError(err instanceof Error ? err.message : String(err));
+        }
     }
 };

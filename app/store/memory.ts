@@ -53,6 +53,9 @@ export class MemoryStore implements Store {
     xrange(key: string, start: string, end: string): [string, string[]][] {
         return this.streamStore.xrange(key, start, end);
     }
+    xread(keys: string[], startIds: string[]): [string, [string, string[]][]][] {
+        return this.streamStore.xread(keys, startIds);
+    }
 
     type(key: string): string | null {
         if (this.stringStore.get(key)) return 'string';
