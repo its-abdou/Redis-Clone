@@ -33,7 +33,7 @@ export const streamCommandHandlers = {
         let keys: string[] = [];
         let startIds : string[] = [];
         for (let i=1 ; i<args.length; i++){
-            if(i%2==1) keys.push(args[i]);
+            if(i<(args.length/2)) keys.push(args[i]);
             else startIds.push(args[i]);
         }
         try {
