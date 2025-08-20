@@ -1,5 +1,5 @@
 import {type Store} from "../store/interface.ts";
-import { encodeBulkString, encodeError } from '../protocol/encoder';
+import {encodeBulkString, encodeError, encodeStream} from '../protocol/encoder';
 import { createArgCountError } from '../utils/errors';
 
 export const streamCommandHandlers = {
@@ -18,4 +18,15 @@ export const streamCommandHandlers = {
             return encodeError(err instanceof Error ? err.message : String(err));
         }
     },
+    XRANGE: async (store: Store, args: string[]): Promise<string> => {
+        if (args.length < 3) return encodeError(createArgCountError('xrange'));
+        const [key , startId, endId] = args;
+        try {
+            const elements = store.xrange(key, startId, endId)
+            return encodeStream(elements)
+        }catch (err) {
+            return encodeError(err instanceof Error ? err.message : String(err));
+        }
+
+    }
 };

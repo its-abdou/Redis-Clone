@@ -9,6 +9,7 @@ export interface Store {
     lpop(key: string, count?: number): string[] | null;
     blpop(key: string, timeoutMs: number): Promise<string[] | null>;
     xadd(key: string, id: string, fields: [string, string][]): string;
+    xrange(key: string, start: string, end: string): [string, string[]][];
     type(key: string): string | null;
 }
 

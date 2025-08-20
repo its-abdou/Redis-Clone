@@ -50,6 +50,9 @@ export class MemoryStore implements Store {
     xadd(key: string, id: string, fields: [string, string][]): string {
         return this.streamStore.xadd(key, id, fields);
     }
+    xrange(key: string, start: string, end: string): [string, string[]][] {
+        return this.streamStore.xrange(key, start, end);
+    }
 
     type(key: string): string | null {
         if (this.stringStore.get(key)) return 'string';

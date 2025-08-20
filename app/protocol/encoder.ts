@@ -14,6 +14,19 @@ export const encodeArray = (elements: string[]): string => {
     return result;
 };
 
+export const encodeStream = (entries : [string, string[]][]) => {
+    if (entries.length === 0) {
+        return '*0\r\n';
+    }
+    let response =`*${entries.length}\r\n`;
+    for (const [id , fieldsValues] of entries) {
+        response+= `*2\r\n`;
+        response += encodeBulkString(id);
+        response += encodeArray(fieldsValues);
+    }
+    return response;
+}
+
 export const encodeNullArray = (): string => '*0\r\n';
 
 export const encodeInteger = (value: number): string => `:${value}\r\n`;
