@@ -1,5 +1,5 @@
 import {type Store} from "../store/interface.ts";
-import {encodeArray, encodeBulkString, encodeError, encodeStream} from '../protocol/encoder';
+import {encodeArray, encodeBulkString, encodeError, encodeNullBulkString, encodeStream} from '../protocol/encoder';
 import { createArgCountError } from '../utils/errors';
 
 export const streamCommandHandlers = {
@@ -29,15 +29,38 @@ export const streamCommandHandlers = {
         }
     },
     XREAD: async (store: Store, args: string[]): Promise<string> => {
-        if (args.length < 3) return encodeError(createArgCountError('xrange'));
-        let keys: string[] = [];
-        let startIds : string[] = [];
-        for (let i=1 ; i<args.length; i++){
-            if(i<(args.length/2)) keys.push(args[i]);
-            else startIds.push(args[i]);
+        if (args.length < 3) return encodeError(createArgCountError('xread'));
+        let argIndex = 0;
+        let blockMS :number|undefined;
+        if (args[argIndex].toLowerCase() === 'block') {
+            if(argIndex+1> args.length) return  encodeError('1');
+            blockMS = Number(args[argIndex+1]);
+            if (blockMS<0 || isNaN(blockMS)) return  encodeError('2');
+            argIndex+=2;
         }
+        if (args[argIndex].toLowerCase() !== 'streams') return encodeError('3');
+
+        argIndex++;
+        const remainingArgs = args.slice(argIndex);
+        if (remainingArgs.length % 2 !== 0) {
+            return encodeError('ERR Unbalanced XREAD list of streams: for each stream key an ID or $ must be specified.');
+        }
+        const numStreams= remainingArgs.length/2;
+        const keys: string[] = remainingArgs.slice(0, numStreams);
+        const startIds : string[] = remainingArgs.slice(numStreams);
+
         try {
-            const elements = store.xread(keys, startIds)
+            let  elements: [string, [string, string[]][]][] | null;
+            if (blockMS !== undefined) {
+                // Use blocking version
+                elements = await store.xreadBlocking(keys, startIds, blockMS);
+            } else {
+                // Use non-blocking version
+                elements = store.xread(keys, startIds);
+            }
+            if (!elements || elements.length < 1) {
+                return encodeNullBulkString()
+            }
             let response = `*${elements.length}\r\n`
             for (const [streamName , entriesArray] of elements) {
                 response+= `*2\r\n`;

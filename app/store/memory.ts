@@ -56,6 +56,9 @@ export class MemoryStore implements Store {
     xread(keys: string[], startIds: string[]): [string, [string, string[]][]][] {
         return this.streamStore.xread(keys, startIds);
     }
+    xreadBlocking(keys: string[], startIds: string[], blockMS: number): Promise<[string, [string, string[]][]][] | null> {
+        return this.streamStore.xreadBlocking(keys, startIds, blockMS);
+    }
 
     type(key: string): string | null {
         if (this.stringStore.get(key)) return 'string';

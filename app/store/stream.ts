@@ -2,6 +2,19 @@ import {type StoredValue , type StreamMessage} from "./interface.ts";
 
 export class StreamStore {
     private data: Record<string, StoredValue & { type: 'stream' }> = {};
+    private waiters: Map<string, {keys:string[], startIds:string[] , callback: (value: [string, [string, string[]][]][] | null) => void}> = new Map();
+
+    private notifyWaiter(key: string): void {
+        for(const [waiterId, waiter] of this.waiters.entries()) {
+            if (waiter.keys.includes(key)) {
+                const value = this.xread(waiter.keys, waiter.startIds);
+                if (value?.length) {
+                    waiter.callback(value);
+                    this.waiters.delete(waiterId);
+                }
+            }
+        }
+    }
 
     getLastStreamId(key: string): string | null {
         const item = this.data[key];
@@ -89,8 +102,8 @@ export class StreamStore {
             stream = { type: 'stream', value: [] };
             this.data[key] = stream;
         }
-
         stream.value.push(streamMessage);
+        this.notifyWaiter(key)
         return validatedId;
     }
 
@@ -125,26 +138,50 @@ export class StreamStore {
     }
     xread(keys: string[], startIds: string[]): [string, [string, string[]][]][] {
         let elements:[string, [string, string[]][]][] = []
-        for (let i=0 ; i<keys.length; i++){
-            const streamName = keys[i];
-            const item = this.data[streamName];
-            if (!item || item.type !== 'stream' || item.value.length === 0) {
-                continue;
-            }
-            const startId = startIds[i].includes('-') ? startIds[i] : `${startIds[i]}-0`;
+            for (let i=0 ; i<keys.length; i++){
+                const streamName = keys[i];
+                const item = this.data[streamName];
+                if (!item || item.type !== 'stream' || item.value.length === 0) {
+                    continue;
+                }
+                const startId = startIds[i].includes('-') ? startIds[i] : `${startIds[i]}-0`;
 
-            const arrayOfEntries=item.value
-                .filter(entry =>
-                    this.compareStreamId(entry.id, startId) > 0
-                ).map(entry => [
-                    entry.id,
-                    Array.from(entry.fields).flatMap(([key, value]) => [key, value])
-                ] as [string, string[]]);
-            if (arrayOfEntries.length > 0) {
-                elements.push([streamName, arrayOfEntries]);
+                const arrayOfEntries=item.value
+                    .filter(entry =>
+                        this.compareStreamId(entry.id, startId) > 0
+                    ).map(entry => [
+                        entry.id,
+                        Array.from(entry.fields).flatMap(([key, value]) => [key, value])
+                    ] as [string, string[]]);
+                if (arrayOfEntries.length > 0) {
+                    elements.push([streamName, arrayOfEntries]);
+                }
             }
-        }
+
         return elements;
+    }
+    xreadBlocking(keys: string[], startIds: string[], blockMS: number): Promise<[string, [string, string[]][]][] | null> {
+        return new Promise((resolve) => {
+            const immediateResults = this.xread(keys, startIds);
+            if (immediateResults?.length) {
+                resolve(immediateResults);
+                return
+            }
+
+
+            // Generate a unique waiter ID
+            const waiterId = `${Date.now()}-${Math.random()}`;
+                const timer = blockMS > 0 ? setTimeout(() => {
+                    this.waiters.delete(waiterId);
+                    resolve(null);
+                }, blockMS) : null;
+
+                this.waiters.set(waiterId, {keys, startIds, callback:(value) => {
+                    if (timer) clearTimeout(timer);
+                    resolve(value);
+                }});
+        });
+
     }
     remove(key: string): void {
         delete this.data[key];

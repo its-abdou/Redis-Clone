@@ -11,6 +11,7 @@ export interface Store {
     xadd(key: string, id: string, fields: [string, string][]): string;
     xrange(key: string, start: string, end: string): [string, string[]][];
     xread(keys: string[], startIds: string[]): [string, [string, string[]][]][];
+    xreadBlocking(keys: string[], startIds: string[], blockMS: number):Promise<[string, [string, string[]][]][] | null>;
     type(key: string): string | null;
 }
 
