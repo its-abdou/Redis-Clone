@@ -144,8 +144,12 @@ export class StreamStore {
                 if (!item || item.type !== 'stream' || item.value.length === 0) {
                     continue;
                 }
-                const startId = startIds[i].includes('-') ? startIds[i] : `${startIds[i]}-0`;
-
+                let startId:string;
+                if (startIds[i]==='$'){
+                    startId = this?.getLastStreamId(streamName) || '';
+                }else {
+                    startId = startIds[i].includes('-') ? startIds[i] : `${startIds[i]}-0`;
+                }
                 const arrayOfEntries=item.value
                     .filter(entry =>
                         this.compareStreamId(entry.id, startId) > 0
@@ -162,7 +166,13 @@ export class StreamStore {
     }
     xreadBlocking(keys: string[], startIds: string[], blockMS: number): Promise<[string, [string, string[]][]][] | null> {
         return new Promise((resolve) => {
-            const immediateResults = this.xread(keys, startIds);
+            const resolvedStartIds = startIds.map((startId, i) => {
+                if (startId === '$') {
+                    return this.getLastStreamId(keys[i]) || '0-0';
+                }
+                return startId;
+            });
+            const immediateResults = this.xread(keys, resolvedStartIds);
             if (immediateResults?.length) {
                 resolve(immediateResults);
                 return
@@ -176,7 +186,7 @@ export class StreamStore {
                     resolve(null);
                 }, blockMS) : null;
 
-                this.waiters.set(waiterId, {keys, startIds, callback:(value) => {
+                this.waiters.set(waiterId, {keys, startIds: resolvedStartIds, callback:(value) => {
                     if (timer) clearTimeout(timer);
                     resolve(value);
                 }});
