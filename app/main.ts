@@ -12,7 +12,7 @@ const server: net.Server = net.createServer((connection: net.Socket) => {
     connection.on('data', async (data: string) => {
         try {
             const response = await parseRedisProtocol(data, store);
-            console.log(response);
+
 
             connection.write(response);
         } catch (err) {
