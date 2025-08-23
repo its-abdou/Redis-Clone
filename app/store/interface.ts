@@ -13,6 +13,7 @@ export interface Store {
     xread(keys: string[], startIds: string[]): [string, [string, string[]][]][];
     xreadBlocking(keys: string[], startIds: string[], blockMS: number):Promise<[string, [string, string[]][]][] | null>;
     type(key: string): string | null;
+    incr(key:string, by:number):number;
 }
 
 export  type CommandHandler = (store :Store , args : string[]) => string | Promise<string>;

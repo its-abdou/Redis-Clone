@@ -4,6 +4,7 @@ import { genericCommandHandlers } from './generic';
 import { stringCommandHandlers } from './string';
 import { listCommandHandlers } from './list';
 import { streamCommandHandlers } from './stream';
+import {transactionCommandHandlers} from "./transaction.ts";
 
 export class CommandExecutor {
     private commandMap: Record<string, CommandHandler> = {
@@ -11,6 +12,7 @@ export class CommandExecutor {
         ...stringCommandHandlers,
         ...listCommandHandlers,
         ...streamCommandHandlers,
+        ...transactionCommandHandlers
     };
 
     async execute(command: string, store: Store, args: string[]): Promise<string> {

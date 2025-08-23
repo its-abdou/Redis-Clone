@@ -3,11 +3,13 @@ import {type Store} from "./interface.ts";
 import { StringStore } from './string';
 import { ListStore } from './list';
 import { StreamStore } from './stream';
+import { transactionStore } from './transaction.ts';
 
 export class MemoryStore implements Store {
     private stringStore = new StringStore();
     private listStore = new ListStore();
     private streamStore = new StreamStore();
+    private transactionStore = new transactionStore(this.stringStore)
 
     get(key: string): string | null {
         return this.stringStore.get(key);
@@ -47,6 +49,13 @@ export class MemoryStore implements Store {
         return this.listStore.blpop(key, timeoutMs);
     }
 
+    type(key: string): string | null {
+        if (this.stringStore.get(key)) return 'string';
+        if (this.listStore.llen(key) > 0) return 'list';
+        if (this.streamStore.getLastStreamId(key)) return 'stream';
+        return null;
+    }
+
     xadd(key: string, id: string, fields: [string, string][]): string {
         return this.streamStore.xadd(key, id, fields);
     }
@@ -60,10 +69,8 @@ export class MemoryStore implements Store {
         return this.streamStore.xreadBlocking(keys, startIds, blockMS);
     }
 
-    type(key: string): string | null {
-        if (this.stringStore.get(key)) return 'string';
-        if (this.listStore.llen(key) > 0) return 'list';
-        if (this.streamStore.getLastStreamId(key)) return 'stream';
-        return null;
+    incr(key: string, by: number = 1): number {
+      return this.transactionStore.incr(key, by);
     }
+
 }
