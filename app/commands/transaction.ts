@@ -4,7 +4,7 @@ import {
     encodeBulkString,
     encodeError,
     encodeInteger,
-    encodeNullBulkString,
+    encodeNullBulkString, encodeSimpleString,
 } from '../protocol/encoder';
 import { createArgCountError } from '../utils/errors';
 
@@ -17,5 +17,11 @@ export const transactionCommandHandlers = {
             }catch (err){
                 return encodeError(err instanceof Error ? err.message : String(err));
             }
+    },
+    MULTI: async (store: Store): Promise<string> => {
+        return encodeSimpleString();
+    },
+    EXEC: async (store: Store): Promise<string> => {
+        return encodeError('EXEC without MULTI')
     }
 }
