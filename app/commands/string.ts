@@ -19,6 +19,7 @@ export const stringCommandHandlers = {
         } else {
            result =store.set(key, value);
         }
+        console.log(result)
         if (result === "QUEUED") return encodeSimpleString("QUEUED");
         return encodeSimpleString();
     },

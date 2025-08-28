@@ -12,15 +12,13 @@ export class StringStore {
           }
           return item.value;
       }
-        if (this.transactionState.inTransaction) {
-            this.transactionState.transactionQueue.push(action);
-            return "QUEUED";
-        }
+
 
       return action()
     }
 
     set(key: string, value: string, ttl?: number): string|void {
+        console.log(this.transactionState.inTransaction)
         const action =()=>{
             this.data[key] = {
                 type: 'string',

@@ -19,7 +19,7 @@ export class MemoryStore implements Store {
     }
 
     set(key: string, value: string, ttl?: number): string| void {
-        this.stringStore.set(key, value, ttl);
+       return  this.stringStore.set(key, value, ttl);
     }
 
     remove(key: string): void {
