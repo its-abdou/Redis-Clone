@@ -13,7 +13,10 @@ export class StringStore {
           return item.value;
       }
 
-
+        if (this.transactionState.inTransaction) {
+            this.transactionState.transactionQueue.push(action);
+            return "QUEUED";
+        }
       return action()
     }
 
