@@ -9,19 +9,30 @@ import {
 import { createArgCountError } from '../utils/errors';
 
 export const transactionCommandHandlers = {
-    INCR: async (store: Store, args: string[]): Promise<string> => {
-            if (args.length < 1) return encodeError(createArgCountError('incr'));
-            const key = args[0];
-            try {
-                return encodeInteger(store.incr(key,1))
-            }catch (err){
-                return encodeError(err instanceof Error ? err.message : String(err));
-            }
-    },
+
     MULTI: async (store: Store): Promise<string> => {
+        store.multi();
         return encodeSimpleString();
     },
     EXEC: async (store: Store): Promise<string> => {
-        return encodeError('EXEC without MULTI')
+        try {
+            const results = store.exec();
+
+            // Encode the array of results
+            const encodedResults = results.map(result => {
+                if (typeof result === 'number') return encodeInteger(result);
+                if (typeof result === 'string') return encodeBulkString(result);
+                if (result === null) return encodeNullBulkString();
+                if (Array.isArray(result)) {
+                    return encodeArray(result.map(item => encodeBulkString(String(item))));
+                }
+                return encodeSimpleString('OK');
+            });
+
+            return encodeArray(encodedResults);
+
+        }catch (err){
+            return encodeError(err instanceof Error ? err.message : String(err));
+        }
     }
 }

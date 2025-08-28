@@ -1,6 +1,6 @@
 export interface Store {
     get(key: string): string | null;
-    set(key: string, value: string, ttl?: number): void;
+    set(key: string, value: string, ttl?: number): string| void;
     remove(key: string): void;
     rpush(key: string, values: string[]): number;
     lpush(key: string, elements: string[]): number;
@@ -13,19 +13,25 @@ export interface Store {
     xread(keys: string[], startIds: string[]): [string, [string, string[]][]][];
     xreadBlocking(keys: string[], startIds: string[], blockMS: number):Promise<[string, [string, string[]][]][] | null>;
     type(key: string): string | null;
-    incr(key:string, by:number):number;
+    incr(key:string, by:number):string|number;
+    multi():void;
+    exec():(RedisValue|null|void)[];
 }
-
+export interface transactionState {
+    inTransaction:boolean;
+    transactionQueue : RedisCommand[];
+}
 export  type CommandHandler = (store :Store , args : string[]) => string | Promise<string>;
 export type StreamMessage = {
     id: string;
     fields: Map<string, string>; // field-value pairs
 };
-
+export type RedisCommand = () => RedisValue|null|void;
 // Union type for different Redis value types
 export type RedisValue =
     | string                    // String values
-    | string[]                  // List values
+    | string[]
+    | number// List values
     | StreamMessage[];          // Stream values (array of messages)
 
 // StoredValue with discriminated union for type safety

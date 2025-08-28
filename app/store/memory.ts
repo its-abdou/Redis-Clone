@@ -1,21 +1,24 @@
-import {type Store} from "./interface.ts";
+import {type RedisCommand, type RedisValue, type Store, type transactionState} from "./interface.ts";
 
 import { StringStore } from './string';
 import { ListStore } from './list';
 import { StreamStore } from './stream';
-import { transactionStore } from './transaction.ts';
+
 
 export class MemoryStore implements Store {
-    private stringStore = new StringStore();
+    transactionState :transactionState={
+        inTransaction:false,
+        transactionQueue:[]
+    }
+    private stringStore = new StringStore(this.transactionState);
     private listStore = new ListStore();
     private streamStore = new StreamStore();
-    private transactionStore = new transactionStore(this.stringStore)
 
     get(key: string): string | null {
         return this.stringStore.get(key);
     }
 
-    set(key: string, value: string, ttl?: number): void {
+    set(key: string, value: string, ttl?: number): string| void {
         this.stringStore.set(key, value, ttl);
     }
 
@@ -59,18 +62,31 @@ export class MemoryStore implements Store {
     xadd(key: string, id: string, fields: [string, string][]): string {
         return this.streamStore.xadd(key, id, fields);
     }
+
     xrange(key: string, start: string, end: string): [string, string[]][] {
         return this.streamStore.xrange(key, start, end);
     }
+
     xread(keys: string[], startIds: string[]): [string, [string, string[]][]][] {
         return this.streamStore.xread(keys, startIds);
     }
+
     xreadBlocking(keys: string[], startIds: string[], blockMS: number): Promise<[string, [string, string[]][]][] | null> {
         return this.streamStore.xreadBlocking(keys, startIds, blockMS);
     }
 
-    incr(key: string, by: number = 1): number {
-      return this.transactionStore.incr(key, by);
+    incr(key: string, by: number = 1): string|number {
+        return this.stringStore.incr(key, by);
     }
-
+    multi(){
+        this.transactionState.inTransaction = true;
+        this.transactionState.transactionQueue = [];
+    }
+    exec(): (RedisValue|null|void)[]{
+        if (!this.transactionState.inTransaction) throw new Error('EXEC without MULTI')
+        const results = this.transactionState.transactionQueue.map(fn => fn());
+        this.transactionState.inTransaction = false;
+        this.transactionState.transactionQueue = [];
+        return results;
+    }
 }
