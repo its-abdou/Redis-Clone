@@ -5,6 +5,9 @@ import type {transactionState} from "./store/interface.ts";
 
 const store = new MemoryStore();
 const clientTransactionStates = new Map<net.Socket, transactionState>();
+const DEFAULT_PORT = 6379;
+
+
 
 console.log('Logs from your program will appear here!');
 
@@ -35,6 +38,14 @@ const server: net.Server = net.createServer((connection: net.Socket) => {
     });
 });
 
-server.listen(6379, '127.0.0.1', () => {
+
+const portArgIndex = process.argv.indexOf('--port');
+let port = DEFAULT_PORT;
+if (portArgIndex !== -1 && process.argv[portArgIndex + 1]) {
+    port = parseInt(process.argv[portArgIndex + 1]);
+}
+
+server.listen(port, '127.0.0.1', () => {
     console.log('Redis server listening on 127.0.0.1:6379');
 });
+
