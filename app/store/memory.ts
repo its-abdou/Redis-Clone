@@ -79,10 +79,20 @@ export class MemoryStore implements Store {
         transactionState.inTransaction = true;
         transactionState.transactionQueue = [];
     }
-    exec(transactionState:transactionState): (RedisValue|null|void)[]{
+    exec(transactionState:transactionState): (RedisValue|null|void|Error)[]{
         if (!transactionState.inTransaction) throw new Error('EXEC without MULTI')
         transactionState.inTransaction = false;
-        const results =transactionState.transactionQueue.map(fn => fn());
+        const results: (RedisValue | null | void | Error)[] = [];
+
+
+        for (const fn of transactionState.transactionQueue) {
+            try {
+                const result = fn();
+                results.push(result);
+            } catch (err) {
+                results.push(err instanceof Error ? err : new Error(String(err)));
+            }
+        }
 
         transactionState.transactionQueue = [];
         return results;

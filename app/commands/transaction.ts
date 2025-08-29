@@ -23,17 +23,14 @@ export const transactionCommandHandlers = {
         try {
             const results = store.exec(transactionState);
             const encodedResults = results.map(result => {
-                try{
                 if (typeof result === 'number') return result
                 if (typeof result === 'string') return  result;
                 if (result === null) return encodeNullBulkString();
+                if (result instanceof Error) return result;
                 if (Array.isArray(result)) {
                     return encodeArray(result.map(item => encodeBulkString(String(item))));
                 }
-                return 'OK';}
-                catch (err){
-                    return encodeError(err instanceof Error ? err.message : String(err));
-                }
+                return 'OK';
             });
             return encodeArray(encodedResults);
         } catch (err) {

@@ -6,11 +6,13 @@ export const encodeBulkString = (value: string): string => `$${value.length}\r\n
 
 export const encodeNullBulkString = (): string => '$-1\r\n';
 
-export const encodeArray = (elements: (string|number)[]): string => {
+export const encodeArray = (elements: (string|number|Error)[]): string => {
     let result = `*${elements.length}\r\n`;
     for (const element of elements) {
         if (typeof element === 'number') {
             result += encodeInteger(element);
+        }else if ( element instanceof Error){
+            result+= encodeError(element.message);
         }else {
         result += encodeBulkString(element);
         }

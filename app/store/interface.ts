@@ -15,7 +15,7 @@ export interface Store {
     type(key: string,transactionState:transactionState): string | null;
     incr(key:string, by:number,transactionState:transactionState):string|number;
     multi(transactionState:transactionState):void;
-    exec(transactionState:transactionState):(RedisValue|null|void)[];
+    exec(transactionState:transactionState):(RedisValue|null|void|Error)[];
     discard(transactionState:transactionState):void;
 }
 export interface transactionState {
