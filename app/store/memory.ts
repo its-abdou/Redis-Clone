@@ -1,4 +1,4 @@
-import {type RedisCommand, type RedisValue, type Store, type transactionState} from "./interface.ts";
+import { type RedisValue, type Store, type transactionState} from "./interface.ts";
 
 import { StringStore } from './string';
 import { ListStore } from './list';
@@ -6,20 +6,17 @@ import { StreamStore } from './stream';
 
 
 export class MemoryStore implements Store {
-    transactionState :transactionState={
-        inTransaction:false,
-        transactionQueue:[]
-    }
-    private stringStore = new StringStore(this.transactionState);
+
+    private stringStore = new StringStore();
     private listStore = new ListStore();
     private streamStore = new StreamStore();
 
-    get(key: string): string | null {
-        return this.stringStore.get(key);
+    get(key: string, transactionState:transactionState): string | null {
+        return this.stringStore.get(key, transactionState);
     }
 
-    set(key: string, value: string, ttl?: number): string| void {
-       return  this.stringStore.set(key, value, ttl);
+    set(key: string, value: string, transactionState:transactionState,ttl?: number): string| void {
+       return  this.stringStore.set(key, value, transactionState,ttl);
     }
 
     remove(key: string): void {
@@ -52,8 +49,8 @@ export class MemoryStore implements Store {
         return this.listStore.blpop(key, timeoutMs);
     }
 
-    type(key: string): string | null {
-        if (this.stringStore.get(key)) return 'string';
+    type(key: string,transactionState:transactionState): string | null {
+        if (this.stringStore.get(key, transactionState)) return 'string';
         if (this.listStore.llen(key) > 0) return 'list';
         if (this.streamStore.getLastStreamId(key)) return 'stream';
         return null;
@@ -75,18 +72,19 @@ export class MemoryStore implements Store {
         return this.streamStore.xreadBlocking(keys, startIds, blockMS);
     }
 
-    incr(key: string, by: number = 1): string|number {
-        return this.stringStore.incr(key, by);
+    incr(key: string, by: number = 1, transactionState:transactionState): string|number {
+        return this.stringStore.incr(key, by, transactionState);
     }
-    multi(){
-        this.transactionState.inTransaction = true;
-        this.transactionState.transactionQueue = [];
+    multi(transactionState:transactionState){
+        transactionState.inTransaction = true;
+        transactionState.transactionQueue = [];
     }
-    exec(): (RedisValue|null|void)[]{
-        if (!this.transactionState.inTransaction) throw new Error('EXEC without MULTI')
-        const results = this.transactionState.transactionQueue.map(fn => fn());
-        this.transactionState.inTransaction = false;
-        this.transactionState.transactionQueue = [];
+    exec(transactionState:transactionState): (RedisValue|null|void)[]{
+        if (!transactionState.inTransaction) throw new Error('EXEC without MULTI')
+        transactionState.inTransaction = false;
+        const results =transactionState.transactionQueue.map(fn => fn());
+
+        transactionState.transactionQueue = [];
         return results;
     }
 }

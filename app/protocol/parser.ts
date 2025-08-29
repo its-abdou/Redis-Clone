@@ -1,10 +1,10 @@
-import { type Store } from '../store/interface.ts';
+import {type Store, type transactionState} from '../store/interface.ts';
 import { CommandExecutor } from '../commands';
 import { encodeSimpleString, encodeError } from './encoder';
 
 const executor = new CommandExecutor();
 
-export async function parseRedisProtocol(command: string, store: Store): Promise<string> {
+export async function parseRedisProtocol(command: string, store: Store , transactionState : transactionState): Promise<string> {
     const lines = command.split('\r\n');
 
     if (lines[0].startsWith('+')) return lines[0] + '\r\n';
@@ -18,5 +18,5 @@ export async function parseRedisProtocol(command: string, store: Store): Promise
     if (args.length === 0) return encodeError('empty command');
 
     const [cmd, ...cmdArgs] = args;
-    return executor.execute(cmd, store, cmdArgs);
+    return executor.execute(cmd, store, cmdArgs , transactionState);
 }

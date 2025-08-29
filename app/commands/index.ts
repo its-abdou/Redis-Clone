@@ -1,4 +1,4 @@
-import { type Store, type CommandHandler } from '../store/interface.ts';
+import {type Store, type CommandHandler, type transactionState} from '../store/interface.ts';
 import { encodeError } from '../protocol/encoder';
 import { genericCommandHandlers } from './generic';
 import { stringCommandHandlers } from './string';
@@ -15,10 +15,10 @@ export class CommandExecutor {
         ...transactionCommandHandlers
     };
 
-    async execute(command: string, store: Store, args: string[]): Promise<string> {
+    async execute(command: string, store: Store, args: string[] , transactionState:transactionState): Promise<string> {
         const cmd = command.toUpperCase();
         const handler = this.commandMap[cmd];
         if (!handler) return encodeError(`command '${cmd}' not supported`);
-        return handler(store, args);
+        return handler(store, args , transactionState);
     }
 }

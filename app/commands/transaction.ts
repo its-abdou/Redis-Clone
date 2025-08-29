@@ -1,4 +1,4 @@
-import {type Store} from "../store/interface.ts";
+import {type Store, type transactionState} from "../store/interface.ts";
 import {
     encodeArray,
     encodeBulkString,
@@ -6,33 +6,35 @@ import {
     encodeInteger,
     encodeNullBulkString, encodeSimpleString,
 } from '../protocol/encoder';
-import { createArgCountError } from '../utils/errors';
+
 
 export const transactionCommandHandlers = {
-
-    MULTI: async (store: Store): Promise<string> => {
-        store.multi();
+    MULTI: async (store: Store, args: string[], transactionState: transactionState): Promise<string> => {
+        if (transactionState.inTransaction) {
+            return encodeError('MULTI calls cannot be nested');
+        }
+        store.multi(transactionState);
         return encodeSimpleString();
     },
-    EXEC: async (store: Store): Promise<string> => {
+    EXEC: async (store: Store, args: string[], transactionState: transactionState): Promise<string> => {
+        if (!transactionState.inTransaction) {
+            return encodeError('EXEC without MULTI');
+        }
         try {
-            const results = store.exec();
-
-            // Encode the array of results
+            const results = store.exec(transactionState);
             const encodedResults = results.map(result => {
-                if (typeof result === 'number') return encodeInteger(result);
-                if (typeof result === 'string') return encodeBulkString(result);
+                if (typeof result === 'number') return result
+                    ;
+                if (typeof result === 'string') return  result;
                 if (result === null) return encodeNullBulkString();
                 if (Array.isArray(result)) {
                     return encodeArray(result.map(item => encodeBulkString(String(item))));
                 }
-                return encodeSimpleString('OK');
+                return 'OK';
             });
-
             return encodeArray(encodedResults);
-
-        }catch (err){
+        } catch (err) {
             return encodeError(err instanceof Error ? err.message : String(err));
         }
     }
-}
+};

@@ -6,10 +6,14 @@ export const encodeBulkString = (value: string): string => `$${value.length}\r\n
 
 export const encodeNullBulkString = (): string => '$-1\r\n';
 
-export const encodeArray = (elements: string[]): string => {
+export const encodeArray = (elements: (string|number)[]): string => {
     let result = `*${elements.length}\r\n`;
     for (const element of elements) {
+        if (typeof element === 'number') {
+            result += encodeInteger(element);
+        }else {
         result += encodeBulkString(element);
+        }
     }
     return result;
 };
@@ -27,6 +31,6 @@ export const encodeStream = (entries : [string, string[]][]) => {
     return response;
 }
 
-export const encodeNullArray = (): string => '*0\r\n';
+export const encodeNullArray = (): string => '*-1\r\n';
 
 export const encodeInteger = (value: number): string => `:${value}\r\n`;

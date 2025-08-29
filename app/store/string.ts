@@ -1,9 +1,9 @@
-import {type RedisCommand, type StoredValue} from "./interface.ts";
+import {type transactionState, type StoredValue} from "./interface.ts";
 export class StringStore {
-    constructor(private transactionState: {inTransaction:boolean, transactionQueue:RedisCommand[]}) {}
+
     private data: Record<string, StoredValue & { type: 'string' }> = {};
 
-    get(key: string): string | null {
+    get(key: string,transactionState:transactionState): string | null {
       const action =()=>{
           const item = this.data[key];
           if (!item || (item.expiresAt && item.expiresAt <= Date.now())) {
@@ -13,15 +13,15 @@ export class StringStore {
           return item.value;
       }
 
-        if (this.transactionState.inTransaction) {
-            this.transactionState.transactionQueue.push(action);
+        if (transactionState.inTransaction) {
+            transactionState.transactionQueue.push(action);
             return "QUEUED";
         }
       return action()
     }
 
-    set(key: string, value: string, ttl?: number): string|void {
-        console.log(this.transactionState.inTransaction)
+    set(key: string, value: string,transactionState:transactionState, ttl?: number): string|void {
+
         const action =()=>{
             this.data[key] = {
                 type: 'string',
@@ -29,23 +29,23 @@ export class StringStore {
                 expiresAt: ttl ? Date.now() + ttl : undefined,
             };
         }
-        if (this.transactionState.inTransaction) {
-            this.transactionState.transactionQueue.push(action);
+        if (transactionState.inTransaction) {
+            transactionState.transactionQueue.push(action);
             return "QUEUED";
         }
         return action()
     }
 
-    incr(key: string, by: number = 1): string|number {
+    incr(key: string, by: number = 1, transactionState:transactionState): string|number {
         const action =()=>{
-            const value = this.get(key);
+            const value = this.get(key, transactionState);
             if(value && Number.isNaN(Number(value))) throw new Error('value is not an integer or out of range')
             const result = value ? Number(value) + by : by;
-            this.set(key, String(result));
+            this.set(key, String(result), transactionState);
             return result;
         }
-        if (this.transactionState.inTransaction) {
-            this.transactionState.transactionQueue.push(action);
+        if (transactionState.inTransaction) {
+            transactionState.transactionQueue.push(action);
             return "QUEUED";
         }
         return action();

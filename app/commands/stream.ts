@@ -1,5 +1,12 @@
 import {type Store} from "../store/interface.ts";
-import {encodeArray, encodeBulkString, encodeError, encodeNullBulkString, encodeStream} from '../protocol/encoder';
+import {
+    encodeArray,
+    encodeBulkString,
+    encodeError,
+    encodeNullArray,
+    encodeNullBulkString,
+    encodeStream
+} from '../protocol/encoder';
 import { createArgCountError } from '../utils/errors';
 
 export const streamCommandHandlers = {
@@ -59,7 +66,7 @@ export const streamCommandHandlers = {
                 elements = store.xread(keys, startIds);
             }
             if (!elements || elements.length < 1) {
-                return encodeNullBulkString()
+                return encodeNullArray()
             }
             let response = `*${elements.length}\r\n`
             for (const [streamName , entriesArray] of elements) {

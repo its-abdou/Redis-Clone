@@ -19,7 +19,8 @@ export const listCommandHandlers = {
         if (args.length < 3) return encodeError(createArgCountError('lrange'));
         const [key, start, end] = args;
         const elements = store.lrange(key, Number(start), Number(end));
-        return elements.length ? encodeArray(elements) : encodeNullArray();
+
+        return encodeArray(elements);
     },
     LLEN: async (store: Store, args: string[]): Promise<string> => {
         if (args.length < 1) return encodeError(createArgCountError('llen'));
@@ -34,9 +35,19 @@ export const listCommandHandlers = {
         return removedItems.length === 1 ? encodeBulkString(removedItems[0]) : encodeArray(removedItems);
     },
     BLPOP: async (store: Store, args: string[]): Promise<string> => {
+
+
         if (args.length < 2) return encodeError(createArgCountError('blpop'));
+
         const [key, timeout] = args;
-        const result = await store.blpop(key, Number(timeout) * 1000);
-        return result ? encodeArray(result) : encodeNullBulkString();
+
+        const timeoutMs = Number(timeout) * 1000;
+
+        const result = await store.blpop(key, timeoutMs);
+
+        const response = result ? encodeArray(result) : encodeNullArray();
+
+
+        return response;
     },
 };
