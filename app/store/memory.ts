@@ -87,4 +87,9 @@ export class MemoryStore implements Store {
         transactionState.transactionQueue = [];
         return results;
     }
+    discard(transactionState: transactionState) {
+        if (!transactionState.inTransaction) throw new Error('DISCARD without MULTI')
+        transactionState.inTransaction = false;
+        transactionState.transactionQueue = [];
+    }
 }

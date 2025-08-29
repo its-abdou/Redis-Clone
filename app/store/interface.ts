@@ -16,6 +16,7 @@ export interface Store {
     incr(key:string, by:number,transactionState:transactionState):string|number;
     multi(transactionState:transactionState):void;
     exec(transactionState:transactionState):(RedisValue|null|void)[];
+    discard(transactionState:transactionState):void;
 }
 export interface transactionState {
     inTransaction:boolean;
