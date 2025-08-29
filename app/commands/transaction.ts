@@ -36,5 +36,14 @@ export const transactionCommandHandlers = {
         } catch (err) {
             return encodeError(err instanceof Error ? err.message : String(err));
         }
-    }
+    },
+    DISCARD: async (store: Store, args: string[], transactionState: transactionState): Promise<string> => {
+       try{
+           store.discard(transactionState);
+           return encodeSimpleString();
+       }catch (err){
+           return encodeError(err instanceof Error ? err.message : String(err));
+       }
+
+    },
 };
