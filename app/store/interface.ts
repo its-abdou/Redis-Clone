@@ -17,6 +17,8 @@ export interface Store {
     multi(transactionState:transactionState):void;
     exec(transactionState:transactionState):(RedisValue|null|void|Error)[];
     discard(transactionState:transactionState):void;
+
+    info(option?:string):string;
 }
 export interface transactionState {
     inTransaction:boolean;

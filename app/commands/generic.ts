@@ -1,5 +1,5 @@
 import {type Store, type transactionState} from '../store/interface.ts';
-import { encodeSimpleString, encodeError } from '../protocol/encoder';
+import {encodeSimpleString, encodeError, encodeBulkString} from '../protocol/encoder';
 import { createArgCountError } from '../utils/errors';
 
 export const genericCommandHandlers = {
@@ -13,4 +13,8 @@ export const genericCommandHandlers = {
         const type = store.type(args[0] ,transactionState );
         return encodeSimpleString(type ?? 'none');
     },
+    INFO: async (store: Store, args: string[]): Promise<string> => {
+        if (args.length < 1) return encodeError(createArgCountError('info'));
+        return encodeBulkString(store.info(args[0]));
+    }
 };

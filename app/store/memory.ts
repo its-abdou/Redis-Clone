@@ -102,4 +102,11 @@ export class MemoryStore implements Store {
         transactionState.inTransaction = false;
         transactionState.transactionQueue = [];
     }
+
+    info(option?: string) : string {
+        if (option === 'replication') {
+            return 'role:master';
+        }
+        return 'OK';
+    }
 }
